@@ -1,0 +1,8 @@
+#!/usr/bin/env php
+<?php
+
+namespace Sunlight\Packager;
+
+$classLoader = require __DIR__ . '/../vendor/autoload.php';
+
+exit((new Cli($classLoader))->run());
