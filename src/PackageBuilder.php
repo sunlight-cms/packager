@@ -15,14 +15,20 @@ class PackageBuilder extends BackupBuilder
     public function buildPackage()
     {
         $excludedVendorRegexps = [
-            'tests/',
+            '.*bin/',
+            'tests?/',
+            '_?exts?/',
+            'docs?/',
             '.*\.(md|markdown|rst)$',
+            '(?:CHANGELOG|UPGRADE)[^/]*$',
             'composer\.lock$',
             'phpunit\.xml\.dist$',
             'build\.properties$',
             'build\.xml$',
-            '\.yml$',
-            '\.git\w+$',
+            '.+\.yml$',
+            '.+\.git\w+$',
+            '.+\.dist',
+            '\.[^/]+$',
         ];
 
         $this->setDatabaseDumpEnabled(false);
