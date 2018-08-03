@@ -94,7 +94,7 @@ class PackageBuilder extends BackupBuilder
             file_get_contents($templatePath),
             [
                 '@@@version@@@' => Core::VERSION,
-                '@@year@@' => date('Y'),
+                '@@@year@@@' => date('Y'),
             ]
         );
     }

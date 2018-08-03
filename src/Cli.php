@@ -35,8 +35,9 @@ class Cli
         if (!is_dir($sunlightRootDirectory)) {
             return $this->fail("SunLight root directory \"{$sunlightRootDirectory}\" does not exist or is not a directory");
         }
-        if (!is_dir($outputDirectory)) {
-            return $this->fail("Output directory \"{$sunlightRootDirectory}\" does not exist or is not a directory");
+
+        if (!is_dir($outputDirectory) && !@mkdir($outputDirectory, 0777, true)) {
+            return $this->fail("Output directory \"{$outputDirectory}\" does not exist and could not be created");
         }
 
         $sunlightRootDirectory = realpath($sunlightRootDirectory) or $this->fail('Failed to resolve SunLight root directory');
