@@ -14,26 +14,37 @@ class PackageBuilder extends BackupBuilder
      */
     public function buildPackage()
     {
-        $excludedVendorRegexps = [
-            '.*bin/',
-            'tests?/',
-            '_?exts?/',
-            'docs?/',
-            '.*\.(md|markdown|rst)$',
-            '(?:CHANGELOG|UPGRADE)[^/]*$',
-            'composer\.lock$',
-            'phpunit\.xml\.dist$',
-            'build\.properties$',
-            'build\.xml$',
-            '.+\.yml$',
-            '.+\.git\w+$',
-            '.+\.dist',
-            '\.[^/]+$',
+        $excludedVendorPatterns = [
+            'bin/*',
+            'test/*',
+            'tests/*',
+            'ext/*',
+            '_exts/*',
+            'doc/*',
+            'docs/*',
+            '*.md',
+            '*.markdown',
+            '*.rst',
+            '*.rst',
+            '*CHANGELOG',
+            '*UPGRADE',
+            'composer.lock',
+            'phpunit.xml.dist$',
+            'build.properties',
+            'build.xml',
+            '*.yml$',
+            '*.git*$',
+            '*.dist',
+            '.*',
+            '*/.*',
         ];
 
         $this->setDatabaseDumpEnabled(false);
-        $this->excludePath('~^vendor/.*/(' . implode('|', $excludedVendorRegexps) . ')~i');
-        $this->excludePath('~^vendor/bin/~');
+        foreach ($excludedVendorPatterns as $vendorPattern) {
+            $this->excludePath('vendor/*/' . $vendorPattern);
+        }
+
+        $this->excludePath('vendor/bin/*');
 
         foreach ($this->getDynamicPathNames() as $dynamicPathName) {
             $this->makeDynamicPathOptional($dynamicPathName);
