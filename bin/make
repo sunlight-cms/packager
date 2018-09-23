@@ -3,6 +3,23 @@
 
 namespace Sunlight\Packager;
 
-$classLoader = require __DIR__ . '/../vendor/autoload.php';
+require __DIR__ . '/../vendor/autoload.php';
 
-exit((new Cli($classLoader))->run());
+set_exception_handler(function ($e) {
+    /** @var \Throwable $e */
+    fwrite(
+        STDERR,
+        <<<ERR
+ERROR: {$e->getMessage()}
+
+{$e->getFile()}#{$e->getLine()}
+
+{$e->getTraceAsString()}
+
+ERR
+    );
+
+    exit(1);
+});
+
+exit((new Cli())->run());

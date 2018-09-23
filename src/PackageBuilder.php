@@ -9,11 +9,23 @@ use Sunlight\Core;
 
 class PackageBuilder extends BackupBuilder
 {
+    /** @var string */
+    private $distType;
+
+    /**
+     * @param string $distType
+     */
+    function __construct($distType)
+    {
+        $this->distType = $distType;
+    }
+
     /**
      * @return TemporaryFile
      */
-    public function buildPackage()
+    function buildPackage()
     {
+        // exclude useless files from vendors
         $excludedVendorPatterns = [
             'bin/*',
             'test/*',
@@ -25,15 +37,14 @@ class PackageBuilder extends BackupBuilder
             '*.md',
             '*.markdown',
             '*.rst',
-            '*.rst',
             '*CHANGELOG',
             '*UPGRADE',
             'composer.lock',
-            'phpunit.xml.dist$',
+            'phpunit.xml.*',
             'build.properties',
             'build.xml',
-            '*.yml$',
-            '*.git*$',
+            '*.yml*',
+            '*.git*',
             '*.dist',
             '.*',
             '*/.*',
@@ -46,10 +57,14 @@ class PackageBuilder extends BackupBuilder
 
         $this->excludePath('vendor/bin/*');
 
+        // disable all dynamic paths
         foreach ($this->getDynamicPathNames() as $dynamicPathName) {
             $this->makeDynamicPathOptional($dynamicPathName);
             $this->disableDynamicPath($dynamicPathName);
         }
+
+        // exclude generated paths
+        $this->excludePath('system/class/Core.php');
 
         return $this->build(PackageBuilder::TYPE_FULL);
     }
@@ -88,6 +103,7 @@ class PackageBuilder extends BackupBuilder
         $zip->deleteName($package::DATA_PATH . '/config.php');
         $zip->addFromString('README.html', $this->processReadmeTemplate(__DIR__ . '/Resource/README.tpl.html'));
         $zip->addFromString('CTIMNE.html', $this->processReadmeTemplate(__DIR__ . '/Resource/CTIMNE.tpl.html'));
+        $zip->addFromString($package::DATA_PATH . '/system/class/Core.php', $this->getCoreClassSource());
     }
 
     protected function createBackup($path)
@@ -101,12 +117,29 @@ class PackageBuilder extends BackupBuilder
      */
     private function processReadmeTemplate($templatePath)
     {
+        $version = Core::VERSION;
+
+        if ($this->distType !== 'STABLE') {
+            $version .= " ({$this->distType})";
+        }
+
         return strtr(
             file_get_contents($templatePath),
             [
-                '@@@version@@@' => Core::VERSION,
+                '@@@version@@@' => $version,
                 '@@@year@@@' => date('Y'),
             ]
+        );
+    }
+
+    /**
+     * @return string
+     */
+    private function getCoreClassSource()
+    {
+        return strtr(
+            file_get_contents(_root . 'system/class/Core.php'),
+            ["const DIST = 'GIT';" => sprintf('const DIST = %s;', var_export($this->distType, true))]
         );
     }
 }

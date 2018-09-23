@@ -22,17 +22,10 @@ Installation
 Usage
 *****
 
-Building a package in the current directory
-===========================================
+::
 
-.. code:: bash
+    bin/make [-od] -r <sunlight-root-dir>
 
-   bin/make path/to/sunlight/cms/source
-
-
-Building a package in a custom directory
-========================================
-
-.. code:: bash
-
-   bin/make path/to/sunlight/cms/source path/to/output/directory
+      -r    path to the sunlight root directory (required)
+      -o    path to an output directory (defaults to current)
+      -d    dist type (GIT / STABLE / BETA, defaults to STABLE)

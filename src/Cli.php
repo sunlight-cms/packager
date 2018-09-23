@@ -2,42 +2,40 @@
 
 namespace Sunlight\Packager;
 
-use Composer\Autoload\ClassLoader;
 use Sunlight\Core;
 
 class Cli
 {
-    /** @var ClassLoader */
-    private $classLoader;
-
-    public function __construct(ClassLoader $classLoader)
-    {
-        $this->classLoader = $classLoader;
-    }
-
     /**
      * @return int
      */
-    public function run()
+    function run()
     {
-        global $argc, $argv;
+        // parse options
+        $options = getopt('r:o:d:');
 
-        // handle arguments
-        if ($argc < 2 || $argc > 3) {
+        if ($options === false || !isset($options['r'])) {
             $this->printUsage();
 
             return 1;
         }
 
-        $sunlightRootDirectory = $argv[1];
-        $outputDirectory = isset($argv[2]) ? $argv[2] : getcwd();
+        $distType = isset($options['d']) ? $options['d'] : 'STABLE';
+
+        if (!in_array($distType, ['GIT', 'STABLE', 'BETA'], true)) {
+            $this->fail('Invalid dist type');
+        }
+
+        // handle directories
+        $sunlightRootDirectory = $options['r'];
+        $outputDirectory = isset($options['o']) ? $options['o'] : getcwd();
 
         if (!is_dir($sunlightRootDirectory)) {
-            return $this->fail("SunLight root directory \"{$sunlightRootDirectory}\" does not exist or is not a directory");
+            $this->fail("SunLight root directory \"{$sunlightRootDirectory}\" does not exist or is not a directory");
         }
 
         if (!is_dir($outputDirectory) && !@mkdir($outputDirectory, 0777, true)) {
-            return $this->fail("Output directory \"{$outputDirectory}\" does not exist and could not be created");
+            $this->fail("Output directory \"{$outputDirectory}\" does not exist and could not be created");
         }
 
         $sunlightRootDirectory = realpath($sunlightRootDirectory) or $this->fail('Failed to resolve SunLight root directory');
@@ -51,7 +49,7 @@ class Cli
         $outputPath = $outputDirectory . '/sunlight_cms_' . str_replace('.', '', Core::VERSION) . '.zip';
 
         echo "Creating package\n";
-        $package = (new PackageBuilder())->buildPackage();
+        $package = (new PackageBuilder($distType))->buildPackage();
 
         echo "Moving package to {$outputPath}\n";
         $package->move($outputPath);
@@ -63,17 +61,22 @@ class Cli
 
     private function printUsage()
     {
-        echo "Usage: make <path-to-sunlight-root-directory> [path-to-output-directory]\n";
+        echo <<<USAGE
+Usage: {$_SERVER['PHP_SELF']} [-od] -r <sunlight-root-dir>
+
+  -r    path to the sunlight root directory (required)
+  -o    path to an output directory (defaults to current)
+  -d    dist type (GIT / STABLE / BETA, defaults to STABLE)
+
+USAGE;
     }
 
     /**
      * @param string $message
-     * @return int
+     * @throws \RuntimeException
      */
     private function fail($message)
     {
-        fwrite(STDERR, "ERROR: {$message}\n");
-
-        return 1;
+        throw new \RuntimeException($message);
     }
 }
