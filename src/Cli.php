@@ -46,7 +46,12 @@ class Cli
         Core::init($sunlightRootDirectory . '/', ['minimal_mode' => true]);
 
         // create package
-        $outputPath = $outputDirectory . '/sunlight_cms_' . str_replace('.', '', Core::VERSION) . '.zip';
+        $outputPath = sprintf(
+            '%s/sunlight_cms_%s%s.zip',
+            $outputDirectory,
+            str_replace('.', '', Core::VERSION),
+            $distType !== 'STABLE' ? '_' . strtolower($distType) : ''
+        );
 
         echo "Creating package\n";
         $package = (new PackageBuilder($distType))->buildPackage();
