@@ -2,7 +2,6 @@
 
 namespace Sunlight\Packager;
 
-use Kuria\Cache\Util\TemporaryFile;
 use Sunlight\Backup\Backup;
 use Sunlight\Backup\BackupBuilder;
 use Sunlight\Core;
@@ -12,19 +11,16 @@ class PackageBuilder extends BackupBuilder
     /** @var string */
     private $distType;
 
-    /**
-     * @param string $distType
-     */
-    function __construct($distType)
+    function __construct(string $distType)
     {
         $this->distType = $distType;
-    }
 
-    /**
-     * @return TemporaryFile
-     */
-    function buildPackage()
-    {
+        // no database dump
+        $this->setDatabaseDumpEnabled(false);
+
+        // no config prefilling
+        $this->setPrefillConfigFile(false);
+
         // exclude useless files from vendors
         $excludedVendorPatterns = [
             'bin/*',
@@ -50,7 +46,6 @@ class PackageBuilder extends BackupBuilder
             '*/.*',
         ];
 
-        $this->setDatabaseDumpEnabled(false);
         foreach ($excludedVendorPatterns as $vendorPattern) {
             $this->excludePath('vendor/*/' . $vendorPattern);
         }
@@ -65,21 +60,20 @@ class PackageBuilder extends BackupBuilder
 
         // exclude generated paths
         $this->excludePath('system/class/Core.php');
-
-        return $this->build(PackageBuilder::TYPE_FULL);
     }
 
-    protected function writeFull(Backup $package)
+    protected function write(Backup $backup): void
     {
-        parent::writeFull($package);
+        $backup->setDataPath('cms');
+        $backup->setMetadataPath(null);
 
-        $zip = $package->getArchive();
+        parent::write($backup);
 
         $directories = [
             'install',
             'plugins/extend/codemirror',
             'plugins/extend/devkit',
-            'plugins/extend/fancybox',
+            'plugins/extend/lightbox',
             'plugins/languages/cs',
             'plugins/languages/en',
             'plugins/templates/default',
@@ -93,29 +87,21 @@ class PackageBuilder extends BackupBuilder
         ];
 
         foreach ($directories as $directory) {
-            $package->addDirectory($directory);
+            $backup->addDirectory($directory);
         }
 
         foreach ($files as $file) {
-            $package->addFile($file, _root . $file);
+            $backup->addFile($file, SL_ROOT . $file);
         }
 
-        $zip->deleteName($package::DATA_PATH . '/config.php');
+        $zip = $backup->getArchive();
+        $zip->deleteName("{$backup->getDataPath()}/config.php");
         $zip->addFromString('README.html', $this->processReadmeTemplate(__DIR__ . '/Resource/README.tpl.html'));
         $zip->addFromString('CTIMNE.html', $this->processReadmeTemplate(__DIR__ . '/Resource/CTIMNE.tpl.html'));
-        $zip->addFromString($package::DATA_PATH . '/system/class/Core.php', $this->getCoreClassSource());
+        $zip->addFromString("{$backup->getDataPath()}/system/class/Core.php", $this->getCoreClassSource());
     }
 
-    protected function createBackup($path)
-    {
-        return new Package($path);
-    }
-
-    /**
-     * @param string $templatePath
-     * @return string
-     */
-    private function processReadmeTemplate($templatePath)
+    private function processReadmeTemplate(string $templatePath): string
     {
         $version = Core::VERSION;
 
@@ -127,18 +113,15 @@ class PackageBuilder extends BackupBuilder
             file_get_contents($templatePath),
             [
                 '@@@version@@@' => $version,
-                '@@@year@@@' => date('Y'),
+                '@@@build_date@@@' => date('Y-m-d'),
             ]
         );
     }
 
-    /**
-     * @return string
-     */
-    private function getCoreClassSource()
+    private function getCoreClassSource(): string
     {
         return strtr(
-            file_get_contents(_root . 'system/class/Core.php'),
+            file_get_contents(SL_ROOT . 'system/class/Core.php'),
             ["const DIST = 'GIT';" => sprintf('const DIST = %s;', var_export($this->distType, true))]
         );
     }

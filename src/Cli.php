@@ -6,10 +6,7 @@ use Sunlight\Core;
 
 class Cli
 {
-    /**
-     * @return int
-     */
-    function run()
+    function run(): int
     {
         // parse options
         $options = getopt('r:o:d:');
@@ -20,7 +17,7 @@ class Cli
             return 1;
         }
 
-        $distType = isset($options['d']) ? $options['d'] : 'STABLE';
+        $distType = $options['d'] ?? 'STABLE';
 
         if (!in_array($distType, ['GIT', 'STABLE', 'BETA'], true)) {
             $this->fail('Invalid dist type');
@@ -28,7 +25,7 @@ class Cli
 
         // handle directories
         $sunlightRootDirectory = $options['r'];
-        $outputDirectory = isset($options['o']) ? $options['o'] : getcwd();
+        $outputDirectory = $options['o'] ?? getcwd();
 
         if (!is_dir($sunlightRootDirectory)) {
             $this->fail("SunLight root directory \"{$sunlightRootDirectory}\" does not exist or is not a directory");
@@ -42,7 +39,7 @@ class Cli
         $outputDirectory = realpath($outputDirectory) or $this->fail('Failed to resolve output directory');
 
         // initialize SunLight core
-        require $sunlightRootDirectory . '/vendor/autoload.php';
+        require $sunlightRootDirectory . '/system/bootstrap.php';
         Core::init($sunlightRootDirectory . '/', ['minimal_mode' => true]);
 
         // create package
@@ -54,7 +51,7 @@ class Cli
         );
 
         echo "Creating package\n";
-        $package = (new PackageBuilder($distType))->buildPackage();
+        $package = (new PackageBuilder($distType))->build();
 
         echo "Moving package to {$outputPath}\n";
         $package->move($outputPath);
@@ -77,10 +74,9 @@ USAGE;
     }
 
     /**
-     * @param string $message
      * @throws \RuntimeException
      */
-    private function fail($message)
+    private function fail(string $message)
     {
         throw new \RuntimeException($message);
     }

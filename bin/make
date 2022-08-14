@@ -5,8 +5,7 @@ namespace Sunlight\Packager;
 
 require __DIR__ . '/../vendor/autoload.php';
 
-set_exception_handler(function ($e) {
-    /** @var \Throwable $e */
+set_exception_handler(function (\Throwable $e) {
     fwrite(
         STDERR,
         <<<ERR

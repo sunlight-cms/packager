@@ -1,9 +1,9 @@
 <!doctype html>
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
 <head>
 <meta charset="UTF-8">
 <title>SunLight CMS @@@version@@@</title>
-<style type="text/css">
+<style>
 * {margin: 0; padding: 0;}
 body {font-family: 'Trebuchet MS', 'Geneva CE', lucida, sans-serif; font-size: 13px; color: #000000; background-color: #ffffff;}
 h1 {font-size: 24px;}
@@ -12,7 +12,7 @@ h3 {font-size: 14px;}
 h4 {font-size: 11px; font-weight: bold; color: #ff6600;}
 a {color: #ff6600; text-decoration: none;}
 
-blockquote, pre, .php-source {border: 1px solid #e7e7e7; border-left: 6px solid #FF5A00; padding: 5px; overflow: auto; line-height: 140%;}
+blockquote, pre {border: 1px solid #e7e7e7; border-left: 6px solid #FF5A00; padding: 5px; overflow: auto; line-height: 140%;}
 p, pre, blockquote, table {margin: 5px 0 15px 0;}
 p, pre, blockquote, table td, ul li, ol li {line-height: 170%;}
 ul, ol {margin: 5px 0 15px 25px;}
@@ -45,13 +45,18 @@ small {color: #858585;}
         <table>
 
             <tr>
-                <td width="125"><strong>Name</strong></td>
+                <td><strong>Name</strong></td>
                 <td>SunLight CMS</td>
             </tr>
 
             <tr>
                 <td><strong>Version</strong></td>
                 <td>@@@version@@@</td>
+            </tr>
+
+            <tr>
+                <td><strong>Build date</strong></td>
+                <td>@@@build_date@@@</td>
             </tr>
 
             <tr>
@@ -63,7 +68,7 @@ small {color: #858585;}
 
 
         <h2>License</h2>
-        <p>Copyright (c) 2006-@@@year@@@ Pavel Batečko (ShiraNai7)</p>
+        <p>Copyright (c) 2006 Pavel Batečko (ShiraNai7)</p>
 
         <p>Permission is hereby granted, free of charge, to any person
             obtaining a copy of this software and associated documentation

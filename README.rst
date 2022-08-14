@@ -7,7 +7,7 @@ Builds ZIP archives from the SunLight CMS 8.x repository intended for distributi
 Requirements
 ************
 
-- PHP 5.4+
+- PHP 7.1+
 - SunLight CMS codebase (version 8.x)
 - `Composer <https://getcomposer.org/>`_
 
