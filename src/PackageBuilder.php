@@ -54,7 +54,7 @@ class PackageBuilder extends BackupBuilder
 
         // disable all dynamic paths
         foreach ($this->getDynamicPathNames() as $dynamicPathName) {
-            $this->makeDynamicPathOptional($dynamicPathName);
+            $this->makeDynamicPathOptionalInFullBackup($dynamicPathName);
             $this->disableDynamicPath($dynamicPathName);
         }
 
