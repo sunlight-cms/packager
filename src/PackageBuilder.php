@@ -77,21 +77,12 @@ class PackageBuilder extends BackupBuilder
             'plugins/languages/cs',
             'plugins/languages/en',
             'plugins/templates/default',
-            'plugins/templates/classic',
+            'plugins/templates/blank',
             'images/groupicons',
-        ];
-
-        $files = [
-            'images/avatars/no-avatar.jpg',
-            'images/avatars/no-avatar-dark.jpg',
         ];
 
         foreach ($directories as $directory) {
             $backup->addDirectory($directory);
-        }
-
-        foreach ($files as $file) {
-            $backup->addFile($file, SL_ROOT . $file);
         }
 
         $zip = $backup->getArchive();
