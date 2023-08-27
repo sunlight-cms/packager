@@ -40,7 +40,7 @@ class Cli
 
         // initialize SunLight core
         require $sunlightRootDirectory . '/system/bootstrap.php';
-        Core::init($sunlightRootDirectory . '/', ['minimal_mode' => true]);
+        Core::init(['minimal_mode' => true]);
 
         // create package
         $outputPath = sprintf(
