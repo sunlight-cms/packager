@@ -1,0 +1,11 @@
+SunLight CMS patch
+
+Z verze: @@@from_version@@@
+Na verzi: @@@to_version@@@
+Datum sestavení: @@@build_date@@@
+
+Patch je možné aplikovat v administraci jeho nahráním v modulu "Ostatní - Aktualizace systému".
+
+Pokud používáte SunLight konzoli, je možné patch aplikovat příkazem:
+
+    bin/console cms.patch --from-path=<path-to-zip>
