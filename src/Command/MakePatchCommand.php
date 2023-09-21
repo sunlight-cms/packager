@@ -14,13 +14,12 @@ class MakePatchCommand
     function run(): int
     {
         // parse arguments
-        $opts = ArgumentParser::parse('r:o:d:', ['since:', 'until:', 'from:', 'to:', 'db:', 'script:']);
+        $opts = ArgumentParser::parse('r:o:', ['since:', 'until:', 'from:', 'to:', 'db:', 'script:']);
 
         isset($opts['r']) or fail('Missing -r');
 
         $root = $opts['r'];
         $output = $opts['o'] ?? null;
-        $distType = mb_strtoupper($opts['d'] ?? 'STABLE');
         $since = $opts['since'] ?? null;
         $until = $opts['until'] ?? null;
         $from = $opts['from'] ?? null;
@@ -29,7 +28,6 @@ class MakePatchCommand
         $patchScriptPath = $opts['script'] ?? null;
 
         is_dir($root) or fail('Invalid -r: dir does not exist');
-        in_array($distType, ['GIT', 'STABLE', 'BETA'], true) or fail('Invalid dist type');
         $databasePatchPath === null || is_file($databasePatchPath) or fail('Invalid --db: file not found');
         $patchScriptPath === null || is_file($patchScriptPath) or fail('Invalid --script: file not found');
 
@@ -61,12 +59,7 @@ class MakePatchCommand
 
         // normalize output
         if ($output === null || ($output[-1] ?? null) === '/') {
-            $output = ($output ?? './') . sprintf(
-                '%s-%s%s.zip',
-                $from,
-                $to,
-                $distType !== 'STABLE' ? "-{$distType}" : ''
-            );
+            $output = ($output ?? './') . sprintf('%s-%s.zip', $from, $to);
         }
 
         // get files
@@ -92,7 +85,6 @@ class MakePatchCommand
         $builder = new PatchBuilder(
             $from,
             $to,
-            $distType,
             $files,
             $removedFiles,
             $databasePatchPath,

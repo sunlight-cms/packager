@@ -3,9 +3,7 @@
 namespace SunlightPackager\Builder;
 
 use Sunlight\Backup\Backup;
-use Sunlight\Core;
 use Sunlight\Util\Json;
-use SunlightPackager\Builder\Helper\CoreClassHelper;
 
 use function SunlightPackager\render_template;
 
@@ -15,8 +13,6 @@ class PatchBuilder extends Builder
     private $from;
     /** @var string */
     private $to;
-    /** @var string */
-    private $distType;
     /** @var string[] */
     private $files;
     /** @var string[] */
@@ -29,7 +25,6 @@ class PatchBuilder extends Builder
     function __construct(
         string $from,
         string $to,
-        string $distType,
         array $files,
         array $removedFiles,
         ?string $databasePatchPath,
@@ -39,7 +34,6 @@ class PatchBuilder extends Builder
 
         $this->from = $from;
         $this->to = $to;
-        $this->distType = $distType;
         $this->files = $files;
         $this->removedFiles = $removedFiles;
         $this->databasePatchPath = $databasePatchPath;
@@ -130,8 +124,5 @@ class PatchBuilder extends Builder
 
         $zip->addFromString('README.txt', render_template('patch/README.txt', $readmeParams));
         $zip->addFromString('CTIMNE.txt', render_template('patch/CTIMNE.txt', $readmeParams));
-
-        // add core class
-        (new CoreClassHelper())->addCoreClass($backup, $this->distType);
     }
 }

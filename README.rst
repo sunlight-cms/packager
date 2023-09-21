@@ -28,13 +28,11 @@ Usage
 
       -r        path to the sunlight root directory (required)
       -o        output .zip output path (default name: sunlight-cms-%version%.zip)
-      -d        dist type (GIT / STABLE / BETA, defaults to STABLE)
 
     bin/make-patch -r <root-dir> [options]
 
       -r        path to the sunlight root directory (required, must be a GIT repo)
       -o        output .zip path (default name: %from-%to%.zip)
-      -d        dist type (GIT / STABLE / BETA, defaults to STABLE)
       --since   starting tag or commit (defaults to newest version tag)
       --until   final tag or commit (defaults to HEAD)
       --from    version this patch is for (defaults to --since tag if possible)

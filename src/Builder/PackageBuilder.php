@@ -4,28 +4,19 @@ namespace SunlightPackager\Builder;
 
 use Sunlight\Backup\Backup;
 use Sunlight\Core;
-use SunlightPackager\Builder\Helper\CoreClassHelper;
 
 use function SunlightPackager\render_template;
 
 class PackageBuilder extends Builder
 {
-    /** @var string */
-    private $distType;
-
-    function __construct(string $distType)
+    function __construct()
     {
         parent::__construct();
-
-        $this->distType = $distType;
 
         // remove dynamic paths
         foreach ($this->getDynamicPathNames() as $name) {
             $this->removeDynamicPath($name);
         }
-
-        // exclude Core.php (added manually with modifications)
-        $this->excludePath('system/class/Core.php');
     }
 
     protected function write(Backup $backup): void
@@ -57,14 +48,11 @@ class PackageBuilder extends Builder
 
         // add READMEs
         $readmeParams = [
-            '@@@version@@@' => Core::VERSION . ($this->distType !== 'STABLE' ? " ({$this->distType})" : ''),
+            '@@@version@@@' => Core::VERSION,
             '@@@build_date@@@' => date('Y-m-d'),
         ];
 
         $zip->addFromString('README.html', render_template('package/README.html', $readmeParams));
         $zip->addFromString('CTIMNE.html', render_template('package/CTIMNE.html', $readmeParams));
-
-        // add core class
-        (new CoreClassHelper())->addCoreClass($backup, $this->distType);
     }
 }
