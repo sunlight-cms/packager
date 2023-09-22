@@ -23,6 +23,8 @@ class PackageBuilder extends Builder
     {
         // write configured contents
         $backup->setDataPath('cms');
+        $backup->setMetadataPath(null); // no backup.json
+
         parent::write($backup);
         $zip = $backup->getArchive();
 

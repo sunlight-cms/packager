@@ -3,7 +3,6 @@
 namespace SunlightPackager\Builder;
 
 use Sunlight\Backup\Backup;
-use Sunlight\Util\Json;
 
 use function SunlightPackager\render_template;
 
@@ -13,8 +12,6 @@ class PatchBuilder extends Builder
     private $from;
     /** @var string */
     private $to;
-    /** @var string[] */
-    private $files;
     /** @var string[] */
     private $removedFiles;
     /** @var string|null */
@@ -34,7 +31,6 @@ class PatchBuilder extends Builder
 
         $this->from = $from;
         $this->to = $to;
-        $this->files = $files;
         $this->removedFiles = $removedFiles;
         $this->databasePatchPath = $databasePatchPath;
         $this->patchScriptPath = $patchScriptPath;
@@ -78,13 +74,9 @@ class PatchBuilder extends Builder
         parent::write($backup);
         $zip = $backup->getArchive();
 
-        // define metadata
+        // prepare metadata
         $metadata = [
             'system_version' => $this->from,
-            'created_at' => time(),
-            'directory_list' => [],
-            'file_list' => $this->files,
-            'db_prefix' => null,
             'patch' => [
                 'new_system_version' => $this->to,
             ],
@@ -112,8 +104,10 @@ class PatchBuilder extends Builder
             $zip->addFile($this->patchScriptPath, 'patch_script.php');
         }
 
-        // write metadata
-        $zip->addFromString('backup.json', Json::encode($metadata));
+        // set metadata factory
+        $backup->setMetadataFactory(function (array $defaultMetadata) use ($metadata) {
+            return array_replace($defaultMetadata, $metadata);
+        });
 
         // add READMEs
         $readmeParams = [
