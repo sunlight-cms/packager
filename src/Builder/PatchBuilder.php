@@ -110,8 +110,6 @@ class PatchBuilder extends Builder
             $metadata['patch']['files_to_remove'] = $this->removedFiles;
         }
 
-        // purge directories
-
         // add database patch
         if ($this->databasePatchPath !== null) {
             $metadata['db_prefix'] = 'sunlight_';
