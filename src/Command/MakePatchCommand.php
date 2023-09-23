@@ -3,6 +3,7 @@
 namespace SunlightPackager\Command;
 
 use Sunlight\Core;
+use Sunlight\Util\Json;
 use Sunlight\Util\TemporaryFile;
 use SunlightPackager\Builder\PatchBuilder;
 use SunlightPackager\CmsFacade;
@@ -14,14 +15,13 @@ class MakePatchCommand
     function run(): int
     {
         // parse arguments
-        $opts = ArgumentParser::parse('r:o:', ['since:', 'until:', 'from:', 'to:', 'db:', 'script:']);
+        $opts = ArgumentParser::parse('r:o:', ['since:', 'from:', 'to:', 'db:', 'script:']);
 
         isset($opts['r']) or fail('Missing -r');
 
         $root = $opts['r'];
         $output = $opts['o'] ?? null;
         $since = $opts['since'] ?? null;
-        $until = $opts['until'] ?? null;
         $from = $opts['from'] ?? null;
         $to = $opts['to'] ?? null;
         $databasePatchPath = $opts['db'] ?? null;
@@ -41,11 +41,6 @@ class MakePatchCommand
             $since = $tags[0];
         }
 
-        // normalize until
-        if ($until === null) {
-            $until = 'HEAD';
-        }
-
         // normalize from
         if ($from === null) {
             preg_match('{v\d+\.\d+\.\d+$}AD', $since) or fail('Cannot parse version from "%s", specify --from', $since);
@@ -63,17 +58,17 @@ class MakePatchCommand
         }
 
         // get files
-        $changedFiles = exec_formatted('cd %s && git diff --name-only %s %s', $root, $since, $until)
+        $diff = exec_formatted('cd %s && git diff --name-only %s %s', $root, $since, 'HEAD')
             or fail('No files changed');
 
-        log('Changed files: %d', count($changedFiles));
+        log('Diff files: %d', count($diff));
 
-        $files = [];
+        $changedFiles = [];
         $removedFiles = [];
 
-        foreach ($changedFiles as $file) {
+        foreach ($diff as $file) {
             if (is_file(SL_ROOT . '/' . $file)) {
-                $files[] = $file;
+                $changedFiles[] = $file;
             } else {
                 $removedFiles[] = $file;
             }
@@ -85,7 +80,7 @@ class MakePatchCommand
         $builder = new PatchBuilder(
             $from,
             $to,
-            $files,
+            $changedFiles,
             $removedFiles,
             $databasePatchPath,
             $patchScriptPath
@@ -110,21 +105,26 @@ class MakePatchCommand
         $zip = new \ZipArchive();
         $zip->open($patch->getPathname());
 
-        $foundVendor = false;
+        $dirs = Json::decode($zip->getFromName('backup.json'))['directory_list'];
+        $printedDirs = [];
 
         for ($i = 0; $i < $zip->numFiles; ++$i) {
             $stat = $zip->statIndex($i);
 
-            if (strncmp($stat['name'], 'data/vendor/', 7) === 0) {
-                if ($foundVendor) {
-                    continue;
-                }
+            // only print dir names for added directories, not individual files
+            foreach ($dirs as $path) {
+                $archivePath = 'data/' . $path . '/';
+                if (strncmp($stat['name'], $archivePath, strlen($archivePath)) === 0) {
+                    if (!isset($printedDirs[$path])) {
+                        log('    %s...', $archivePath);
+                        $printedDirs[$path] = true;
+                    }
 
-                $foundVendor = true;
-                log('    data/vendor/...');
-                continue;
+                    continue 2;
+                }
             }
 
+            // print file
             log('    %s', $stat['name']);
         }
     }

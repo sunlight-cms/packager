@@ -3,6 +3,7 @@
 namespace SunlightPackager\Builder;
 
 use Sunlight\Backup\Backup;
+use Sunlight\Plugin\Plugin;
 
 use function SunlightPackager\render_template;
 
@@ -22,7 +23,7 @@ class PatchBuilder extends Builder
     function __construct(
         string $from,
         string $to,
-        array $files,
+        array $changedFiles,
         array $removedFiles,
         ?string $databasePatchPath,
         ?string $patchScriptPath
@@ -42,11 +43,32 @@ class PatchBuilder extends Builder
             $this->removeDynamicPath($name);
         }
 
-        // add files
-        $this->addDynamicPath('patch_files', $files);
+        // filter out plugins from changed files
+        $plugins = [];
+        $changedFiles = array_filter($changedFiles, function (string $file) use (&$plugins) {
+            if (preg_match('{plugins/(\w+)/(' . Plugin::ID_PATTERN . ')/}A', $file, $match)) {
+                if ($match[1] !== 'template') {
+                    $plugins[$match[1]][$match[2]] = true;
+                }
+
+                return false;
+            }
+
+            return true;
+        });
+
+        // add changed files
+        $this->addDynamicPath('patch_files', $changedFiles);
+
+        // add plugins
+        foreach ($plugins as $type => $plugins) {
+            foreach ($plugins as $id => $_) {
+                $this->addDynamicPath("plugin_{$type}_{$id}", ["plugins/{$type}/{$id}"]);
+            }
+        }
 
         // add vendor if composer.json has changed
-        if (in_array('composer.json', $files, true)) {
+        if (in_array('composer.json', $changedFiles, true)) {
             $this->addDynamicPath('patch_vendor', ['vendor']);
         }
 
@@ -54,7 +76,8 @@ class PatchBuilder extends Builder
         $excludedPaths = [
             'images/*',
             'install/*',
-            'plugins/templates/*',
+            'plugins/*/DISABLED',
+            'plugins/*/config.php',
             'upload/*',
             '.*', // .htaccess, .gitignore, etc.
             'config.php.dist',
@@ -82,15 +105,12 @@ class PatchBuilder extends Builder
             ],
         ];
 
-        // add vendor to metadata
-        if ($this->hasDynamicPath('patch_vendor')) {
-            $metadata['directory_list'][] = 'vendor';
-        }
-
         // add removed files
         if (!empty($this->removedFiles)) {
             $metadata['patch']['files_to_remove'] = $this->removedFiles;
         }
+
+        // purge directories
 
         // add database patch
         if ($this->databasePatchPath !== null) {
