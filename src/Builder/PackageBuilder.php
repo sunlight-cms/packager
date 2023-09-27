@@ -13,9 +13,10 @@ class PackageBuilder extends Builder
     {
         parent::__construct();
 
-        // remove dynamic paths
+        // disable dynamic paths
         foreach ($this->getDynamicPathNames() as $name) {
-            $this->removeDynamicPath($name);
+            $this->disableDynamicPath($name);
+            $this->makeDynamicPathOptionalInFullBackup($name);
         }
     }
 
