@@ -84,6 +84,7 @@ class PatchBuilder extends Builder
             'robots.txt',
             'favicon.ico',
             'README.rst',
+            'SECURITY.rst',
         ];
 
         foreach ($excludedPaths as $path) {
