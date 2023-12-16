@@ -13,6 +13,9 @@ class PackageBuilder extends Builder
     {
         parent::__construct();
 
+        // disable config.php
+        $this->setConfigFileEnabled(false);
+
         // disable dynamic paths
         foreach ($this->getDynamicPathNames() as $name) {
             $this->disableDynamicPath($name);
@@ -46,8 +49,7 @@ class PackageBuilder extends Builder
             $backup->addDirectory($directory);
         }
 
-        // remove auto-generated config.php
-        $zip->deleteName("{$backup->getDataPath()}/config.php");
+        $backup->addEmptyDirectory('plugins/config');
 
         // add READMEs
         $readmeParams = [
