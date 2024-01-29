@@ -54,7 +54,7 @@ class MakePatchCommand
 
         // normalize output
         if ($output === null || ($output[-1] ?? null) === '/') {
-            $output = ($output ?? './') . sprintf('%s-%s.zip', $from, $to);
+            $output = ($output ?? './') . sprintf('%s-%s.zip', str_replace('*', 'x', $from), $to);
         }
 
         // get files

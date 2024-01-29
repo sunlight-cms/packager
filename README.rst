@@ -34,7 +34,7 @@ Usage
       -r        path to the sunlight root directory (required, must be a GIT repo)
       -o        output .zip path (default name: %from-%to%.zip)
       --since   starting tag or commit (defaults to newest version tag)
-      --from    version this patch is for (defaults to --since tag if possible)
+      --from    version constraint this patch applies to (defaults to --since version if possible)
       --to      version this patch updates to (defaults to core version)
       --db      path to a .sql patch file (optional)
       --script  path to a .php patch script (optional)
