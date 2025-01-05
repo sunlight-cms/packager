@@ -47,7 +47,8 @@ class PatchBuilder extends Builder
         $plugins = [];
         $changedFiles = array_filter($changedFiles, function (string $file) use (&$plugins) {
             if (preg_match('{plugins/(\w+)/(' . Plugin::NAME_PATTERN . ')/}A', $file, $match)) {
-                if ($match[1] !== 'template') {
+                // only add non-templates
+                if ($match[1] !== 'templates') {
                     $plugins[$match[1]][$match[2]] = true;
                 }
 
